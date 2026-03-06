@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import logging
 from types import SimpleNamespace
 
 from open_meteo import (
@@ -135,7 +134,7 @@ class OpenMeteoDataUpdateCoordinator(DataUpdateCoordinator[Forecast]):
                 temperature_unit=TemperatureUnit.CELSIUS,
                 timezone="auto",
                 wind_speed_unit=WindSpeedUnit.KILOMETERS_PER_HOUR,
-                #forecast_days=14,
+                # forecast_days=14,
             )
         except OpenMeteoError as err:
             raise UpdateFailed("Open-Meteo API communication error") from err
