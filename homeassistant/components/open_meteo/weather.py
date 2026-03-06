@@ -2,17 +2,21 @@
 
 from __future__ import annotations
 
-from datetime import datetime, time
+from datetime import datetime, time, timedelta, timezone
 
 from open_meteo import Forecast as OpenMeteoForecast
 
 from homeassistant.components.weather import (
+    ATTR_FORECAST_CLOUD_COVERAGE,
     ATTR_FORECAST_CONDITION,
+    ATTR_FORECAST_HUMIDITY,
     ATTR_FORECAST_NATIVE_PRECIPITATION,
     ATTR_FORECAST_NATIVE_TEMP,
     ATTR_FORECAST_NATIVE_TEMP_LOW,
     ATTR_FORECAST_NATIVE_WIND_SPEED,
+    ATTR_FORECAST_PRESSURE,
     ATTR_FORECAST_WIND_BEARING,
+    ATTR_FORECAST_WIND_GUST_SPEED,
     Forecast,
     SingleCoordinatorWeatherEntity,
     WeatherEntityFeature,
@@ -72,32 +76,52 @@ class OpenMeteoWeatherEntity(
     @property
     def condition(self) -> str | None:
         """Return the current condition."""
-        if not self.coordinator.data.current_weather:
+        if (
+            not hasattr(self.coordinator.data, "current")
+            or not self.coordinator.data.current
+        ):
             return None
-        return WMO_TO_HA_CONDITION_MAP.get(
-            self.coordinator.data.current_weather.weather_code
-        )
+        return WMO_TO_HA_CONDITION_MAP.get(self.coordinator.data.current.weathercode)
 
     @property
     def native_temperature(self) -> float | None:
         """Return the platform temperature."""
-        if not self.coordinator.data.current_weather:
+        if (
+            not hasattr(self.coordinator.data, "current")
+            or not self.coordinator.data.current
+        ):
             return None
-        return self.coordinator.data.current_weather.temperature
+        return self.coordinator.data.current.temperature_2m
 
     @property
     def native_wind_speed(self) -> float | None:
         """Return the wind speed."""
-        if not self.coordinator.data.current_weather:
+        if (
+            not hasattr(self.coordinator.data, "current")
+            or not self.coordinator.data.current
+        ):
             return None
-        return self.coordinator.data.current_weather.wind_speed
+        return self.coordinator.data.current.windspeed_10m
 
     @property
     def wind_bearing(self) -> float | str | None:
         """Return the wind bearing."""
-        if not self.coordinator.data.current_weather:
+        if (
+            not hasattr(self.coordinator.data, "current")
+            or not self.coordinator.data.current
+        ):
             return None
-        return self.coordinator.data.current_weather.wind_direction
+        return self.coordinator.data.current.winddirection_10m
+
+    @property
+    def native_wind_gust_speed(self) -> float | None:
+        """Return the current wind gust speed."""
+        if (
+            not hasattr(self.coordinator.data, "current")
+            or not self.coordinator.data.current
+        ):
+            return None
+        return self.coordinator.data.current.windgusts_10m
 
     @callback
     def _async_forecast_daily(self) -> list[Forecast] | None:
@@ -106,10 +130,11 @@ class OpenMeteoWeatherEntity(
             return None
 
         forecasts: list[Forecast] = []
+        tz = timezone(timedelta(seconds=self.coordinator.data.utc_offset_seconds))
 
         daily = self.coordinator.data.daily
         for index, date in enumerate(self.coordinator.data.daily.time):
-            _datetime = datetime.combine(date=date, time=time(0), tzinfo=dt_util.UTC)
+            _datetime = datetime.combine(date=date, time=time(0), tzinfo=tz)
             forecast = Forecast(
                 datetime=_datetime.isoformat(),
             )
@@ -156,11 +181,12 @@ class OpenMeteoWeatherEntity(
 
         # Can have data in the past: https://github.com/open-meteo/open-meteo/issues/699
         today = dt_util.utcnow()
+        tz = timezone(timedelta(seconds=self.coordinator.data.utc_offset_seconds))
 
         hourly = self.coordinator.data.hourly
         for index, _datetime in enumerate(self.coordinator.data.hourly.time):
             if _datetime.tzinfo is None:
-                _datetime = _datetime.replace(tzinfo=dt_util.UTC)
+                _datetime = _datetime.replace(tzinfo=tz)
             if _datetime < today:
                 continue
 
@@ -180,6 +206,24 @@ class OpenMeteoWeatherEntity(
 
             if hourly.temperature_2m is not None:
                 forecast[ATTR_FORECAST_NATIVE_TEMP] = hourly.temperature_2m[index]
+
+            if hourly.wind_speed_10m is not None:
+                forecast[ATTR_FORECAST_NATIVE_WIND_SPEED] = hourly.wind_speed_10m[index]
+
+            if hourly.wind_direction_10m is not None:
+                forecast[ATTR_FORECAST_WIND_BEARING] = hourly.wind_direction_10m[index]
+
+            if hourly.relative_humidity_2m is not None:
+                forecast[ATTR_FORECAST_HUMIDITY] = hourly.relative_humidity_2m[index]
+
+            if hourly.cloud_cover is not None:
+                forecast[ATTR_FORECAST_CLOUD_COVERAGE] = hourly.cloud_cover[index]
+
+            if hourly.pressure_msl is not None:
+                forecast[ATTR_FORECAST_PRESSURE] = hourly.pressure_msl[index]
+
+            if hourly.wind_gusts_10m is not None:
+                forecast[ATTR_FORECAST_WIND_GUST_SPEED] = hourly.wind_gusts_10m[index]
 
             forecasts.append(forecast)
 
