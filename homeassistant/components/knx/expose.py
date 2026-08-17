@@ -1,4 +1,4 @@
-    """Expose Home Assistant entity states to KNX."""
+"""Expose Home Assistant entity states to KNX."""
 
 from asyncio import TaskGroup
 from collections.abc import Callable, Iterable
