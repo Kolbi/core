@@ -207,19 +207,39 @@ class KnxExposeEntity:
         self._set_expose_state(self.hass.states.get(self.entity_id))
 
     @callback
+    def _initialize_expose_value(
+        self, xknx_expose: ExposeSensor, value: StateType
+    ) -> bool:
+        """Initialize an expose value without sending to KNX."""
+        try:
+            xknx_expose.initialize_value(value)
+        except ConversionError:
+            _LOGGER.exception(
+                "Error setting value %s for expose sensor %s",
+                value,
+                xknx_expose.name,
+            )
+            return False
+        return True
+    
+    @callback
     def _set_expose_state(self, state: State | None) -> None:
-        """Set the local state of all exposures without sending to KNX."""
+        """Set the initial state of all exposures."""
         for option, xknx_expose in self._exposures:
             state_value = self._get_expose_value(state, option)
             if state_value is None:
                 continue
-            try:
-                xknx_expose.initialize_value(state_value)
-            except ConversionError:
-                _LOGGER.exception(
-                    "Error setting value %s for expose sensor %s",
-                    state_value,
-                    xknx_expose.name,
+
+            if not self._initialize_expose_value(xknx_expose, state_value):
+                continue
+
+            if option.send_on_init:
+                self.hass.async_create_task(
+                    self._async_set_knx_value(
+                        xknx_expose,
+                        state_value,
+                        skip_unchanged=False,
+                    )
                 )
 
     @callback
@@ -296,24 +316,33 @@ class KnxExposeEntity:
                     continue
 
                 if xknx_expose.sensor_value.value is None:
-                    try:
-                        xknx_expose.initialize_value(expose_value)
-                    except ConversionError:
-                        _LOGGER.exception(
-                            "Error setting value %s for expose sensor %s",
-                            expose_value,
-                            xknx_expose.name,
+                    if not self._initialize_expose_value(
+                        xknx_expose, expose_value
+                    ):
+                        continue
+
+                    if option.send_on_init:
+                        tg.create_task(
+                            self._async_set_knx_value(
+                                xknx_expose,
+                                expose_value,
+                                skip_unchanged=False,
+                            )    
                         )
                     continue
 
                 tg.create_task(self._async_set_knx_value(xknx_expose, expose_value))
 
     async def _async_set_knx_value(
-        self, xknx_expose: ExposeSensor, value: StateType
+        self,
+        xknx_expose: ExposeSensor,
+        value: StateType,
+        *,
+        skip_unchanged: bool = True,
     ) -> None:
         """Set new value on xknx ExposeSensor."""
         try:
-            await xknx_expose.set(value, skip_unchanged=True)
+            await xknx_expose.set(value, skip_unchanged=skip_unchanged)            
         except ConversionError as err:
             _LOGGER.warning(
                 'Could not expose %s value "%s" to KNX: %s',
