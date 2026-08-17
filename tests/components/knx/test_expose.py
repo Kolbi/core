@@ -600,9 +600,9 @@ async def test_ui_expose_send_on_init(
     await hass.async_block_till_done()
     await knx.assert_write(group_address, True)
 
-    stored_options = hass_storage[KNX_CONFIG_STORAGE_KEY]["data"]["expose"][
-        entity_id
-    ]["options"]
+    stored_options = hass_storage[KNX_CONFIG_STORAGE_KEY]["data"]["expose"][entity_id][
+        "options"
+    ]
     assert stored_options[0]["send_on_init"] is True
 
 
