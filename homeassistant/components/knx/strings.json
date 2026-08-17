@@ -469,6 +469,10 @@
               "description": "Reset back to “off” state after specified seconds.",
               "label": "Reset after"
             },
+            "send_on_init": {
+              "description": "Send the initial expose value to the KNX bus when the expose is initialized.",
+              "label": "Send on initialization"
+            },            
             "section_advanced_options": {
               "description": "Properties of the binary sensor state.",
               "title": "State properties"
