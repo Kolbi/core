@@ -547,6 +547,7 @@ class ExposeSchema(KNXPlatformSchema):
     CONF_KNX_EXPOSE_BINARY = "binary"
     CONF_KNX_EXPOSE_COOLDOWN = "cooldown"
     CONF_KNX_EXPOSE_PERIODIC_SEND = "periodic_send"
+    CONF_KNX_EXPOSE_SEND_ON_INIT = "send_on_init"
     CONF_KNX_EXPOSE_DEFAULT = "default"
     CONF_TIME = "time"
     CONF_DATE = "date"
@@ -569,6 +570,7 @@ class ExposeSchema(KNXPlatformSchema):
             vol.Optional(
                 CONF_KNX_EXPOSE_PERIODIC_SEND, default=timedelta(0)
             ): cv.positive_time_period,
+            vol.Optional(CONF_KNX_EXPOSE_SEND_ON_INIT, default=False): cv.boolean,
             vol.Optional(CONF_RESPOND_TO_READ, default=True): cv.boolean,
             vol.Required(CONF_KNX_EXPOSE_TYPE): vol.Any(
                 CONF_KNX_EXPOSE_BINARY, sensor_type_validator
