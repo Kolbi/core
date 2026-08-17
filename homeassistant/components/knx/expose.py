@@ -221,7 +221,7 @@ class KnxExposeEntity:
             )
             return False
         return True
-    
+
     @callback
     def _set_expose_state(self, state: State | None) -> None:
         """Set the initial state of all exposures."""
@@ -316,9 +316,7 @@ class KnxExposeEntity:
                     continue
 
                 if xknx_expose.sensor_value.value is None:
-                    if not self._initialize_expose_value(
-                        xknx_expose, expose_value
-                    ):
+                    if not self._initialize_expose_value(xknx_expose, expose_value):
                         continue
 
                     if option.send_on_init:
@@ -327,7 +325,7 @@ class KnxExposeEntity:
                                 xknx_expose,
                                 expose_value,
                                 skip_unchanged=False,
-                            )    
+                            )
                         )
                     continue
 
@@ -342,7 +340,7 @@ class KnxExposeEntity:
     ) -> None:
         """Set new value on xknx ExposeSensor."""
         try:
-            await xknx_expose.set(value, skip_unchanged=skip_unchanged)            
+            await xknx_expose.set(value, skip_unchanged=skip_unchanged)
         except ConversionError as err:
             _LOGGER.warning(
                 'Could not expose %s value "%s" to KNX: %s',
