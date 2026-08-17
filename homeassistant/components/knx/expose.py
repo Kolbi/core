@@ -118,6 +118,7 @@ class KnxExposeOptions:
     respond_to_read: bool
     cooldown: float
     periodic_send: float
+    send_on_init: bool
     default: Any | None
     value_template: Template | None
 
@@ -144,6 +145,7 @@ def _yaml_config_to_expose_options(config: ConfigType) -> KnxExposeOptions:
         group_address=ga,
         dpt=dpt,
         respond_to_read=config[CONF_RESPOND_TO_READ],
+        send_on_init=config[ExposeSchema.CONF_KNX_EXPOSE_SEND_ON_INIT],
         cooldown=cooldown_seconds,
         periodic_send=periodic_send_seconds,
         default=config.get(ExposeSchema.CONF_KNX_EXPOSE_DEFAULT),
