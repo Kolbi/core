@@ -1,4 +1,4 @@
-"""Expose Home Assistant entity states to KNX."""
+    """Expose Home Assistant entity states to KNX."""
 
 from asyncio import TaskGroup
 from collections.abc import Callable, Iterable
@@ -208,15 +208,15 @@ class KnxExposeEntity:
 
     @callback
     def _initialize_expose_value(
-        self, xknx_expose: ExposeSensor, value: StateType
+        self, xknx_expose: ExposeSensor, expose_value: StateType
     ) -> bool:
         """Initialize an expose value without sending to KNX."""
         try:
-            xknx_expose.initialize_value(value)
+            xknx_expose.initialize_value(expose_value)
         except ConversionError:
             _LOGGER.exception(
                 "Error setting value %s for expose sensor %s",
-                value,
+                expose_value,
                 xknx_expose.name,
             )
             return False
