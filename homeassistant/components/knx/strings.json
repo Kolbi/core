@@ -472,7 +472,7 @@
             "reset_after": {
               "description": "Reset back to “off” state after specified seconds.",
               "label": "Reset after"
-            },           
+            }, 
             "section_advanced_options": {
               "description": "Properties of the binary sensor state.",
               "title": "State properties"
