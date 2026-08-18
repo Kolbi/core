@@ -201,42 +201,42 @@ class KnxExposeEntity:
             self.xknx.devices.async_add(xknx_expose)
         self._init_expose_state()
 
-@callback
-def _init_expose_state(self) -> None:
-    """Initialize state of all exposures from the current HA state."""
-    state = self.hass.states.get(self.entity_id)
-    for option, xknx_expose in self._exposures:
-        expose_value = self._get_expose_value(state, option)
-        if expose_value is None:
-            continue
-
-        if not self._initialize_expose_value(xknx_expose, expose_value):
-            continue
-
-        if option.send_on_init:
-            self.hass.async_create_task(
-                self._async_set_knx_value(
-                    xknx_expose,
-                    expose_value,
-                    skip_unchanged=False,
+    @callback
+    def _init_expose_state(self) -> None:
+        """Initialize state of all exposures from the current HA state."""
+        state = self.hass.states.get(self.entity_id)
+        for option, xknx_expose in self._exposures:
+            expose_value = self._get_expose_value(state, option)
+            if expose_value is None:
+                continue
+    
+            if not self._initialize_expose_value(xknx_expose, expose_value):
+                continue
+    
+            if option.send_on_init:
+                self.hass.async_create_task(
+                    self._async_set_knx_value(
+                        xknx_expose,
+                        expose_value,
+                        skip_unchanged=False,
+                    )
                 )
+    
+    @callback
+    def _initialize_expose_value(
+        self, xknx_expose: ExposeSensor, expose_value: StateType
+    ) -> bool:
+        """Initialize an expose value without sending to KNX."""
+        try:
+            xknx_expose.initialize_value(expose_value)
+        except ConversionError:
+            _LOGGER.exception(
+                "Error setting value %s for expose sensor %s",
+                expose_value,
+                xknx_expose.name,
             )
-
-@callback
-def _initialize_expose_value(
-    self, xknx_expose: ExposeSensor, expose_value: StateType
-) -> bool:
-    """Initialize an expose value without sending to KNX."""
-    try:
-        xknx_expose.initialize_value(expose_value)
-    except ConversionError:
-        _LOGGER.exception(
-            "Error setting value %s for expose sensor %s",
-            expose_value,
-            xknx_expose.name,
-        )
-        return False
-    return True
+            return False
+        return True
 
     @callback
     def async_remove(self) -> None:
