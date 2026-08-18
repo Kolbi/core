@@ -209,10 +209,10 @@ class KnxExposeEntity:
             expose_value = self._get_expose_value(state, option)
             if expose_value is None:
                 continue
-    
+
             if not self._initialize_expose_value(xknx_expose, expose_value):
                 continue
-    
+
             if option.send_on_init:
                 self.hass.async_create_task(
                     self._async_set_knx_value(
@@ -221,7 +221,7 @@ class KnxExposeEntity:
                         skip_unchanged=False,
                     )
                 )
-    
+
     @callback
     def _initialize_expose_value(
         self, xknx_expose: ExposeSensor, expose_value: StateType
