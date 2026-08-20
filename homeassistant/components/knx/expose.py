@@ -117,7 +117,7 @@ class KnxExposeOptions:
     dpt: type[DPTBase]
     respond_to_read: bool
     cooldown: float
-    send_on_init: bool    
+    send_on_init: bool
     periodic_send: float
     default: Any | None
     value_template: Template | None
@@ -146,7 +146,7 @@ def _yaml_config_to_expose_options(config: ConfigType) -> KnxExposeOptions:
         dpt=dpt,
         respond_to_read=config[CONF_RESPOND_TO_READ],
         cooldown=cooldown_seconds,
-        send_on_init=config[ExposeSchema.CONF_KNX_EXPOSE_SEND_ON_INIT],        
+        send_on_init=config[ExposeSchema.CONF_KNX_EXPOSE_SEND_ON_INIT],
         periodic_send=periodic_send_seconds,
         default=config.get(ExposeSchema.CONF_KNX_EXPOSE_DEFAULT),
         value_template=config.get(CONF_VALUE_TEMPLATE),
