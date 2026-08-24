@@ -1142,12 +1142,12 @@
           "description": "[%key:component::knx::config_panel::entities::create::_::knx::respond_to_read::description%]",
           "label": "[%key:component::knx::config_panel::entities::create::_::knx::respond_to_read::label%]"
         },
+        "section_advanced_options": {
+          "title": "Additional settings"
+        },
         "send_on_init": {
           "description": "Send the first valid value to the KNX bus when the expose is initialized.",
           "label": "Send on initialization"
-        },
-        "section_advanced_options": {
-          "title": "Additional settings"
         },
         "show_raw_values": "Show raw values",
         "title": "Add exposure",
